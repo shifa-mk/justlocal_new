@@ -47,8 +47,7 @@
       "expo-status-bar",
       "expo-apple-authentication"
     ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    "experiments": {"typedRoutes": true},
+    "extra": {"backendUrl": "http://127.0.0.1:8000"}
   }
 }

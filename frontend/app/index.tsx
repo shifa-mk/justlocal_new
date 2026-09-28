@@ -1,3 +1,6 @@
+
+import React from "react";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
@@ -433,6 +436,7 @@ function ProductCard({ medicine, onAdd, onDetails }: { medicine: Medicine; onAdd
 function Empty({ icon, title, copy }: { icon: IconName; title: string; copy: string }) {
   const styles = useStyles();
   const { colors } = useTheme();
+  const router = useRouter();
   return (
     <View style={{ alignItems: "center", paddingVertical: 70 }}>
       <View style={[styles.quickIcon, { marginBottom: 14 }]}><Icon name={icon} color={colors.brandPrimary} size={26} /></View>
@@ -443,155 +447,2014 @@ function Empty({ icon, title, copy }: { icon: IconName; title: string; copy: str
 }
 
 // ----------------- SCREENS -----------------
-function Home({ categories, pharmacies, offers, medicines, onTab, onPrescription, onCategory, onProduct, onAdd, onCart, search, setSearch, cartCount, location, onLocation, refills, activeProfile, onReorderRefill }: {
-  categories: Category[]; pharmacies: Pharmacy[]; offers: Offer[]; medicines: Medicine[]; onTab: (t: Tab) => void;
-  onPrescription: () => void; onCategory: (c: string) => void; onProduct: (m: Medicine) => void; onAdd: (m: Medicine) => void;
-  onCart: () => void; search: string; setSearch: (v: string) => void; cartCount: number;
-  location: SavedLocation | null; onLocation: () => void;
-  refills: Refill[]; activeProfile: FamilyMember | null; onReorderRefill: (r: Refill) => void;
+function Home({
+  categories,
+  pharmacies,
+  offers,
+  medicines,
+  onTab,
+  onPrescription,
+  onCategory,
+  onProduct,
+  onAdd,
+  onCart,
+  search,
+  setSearch,
+  cartCount,
+  location,
+  onLocation,
+  refills,
+  activeProfile,
+  onReorderRefill,
+}: {
+  categories: Category[];
+  pharmacies: Pharmacy[];
+  offers: Offer[];
+  medicines: Medicine[];
+  onTab: (t: Tab) => void;
+  onPrescription: () => void;
+  onCategory: (c: string) => void;
+  onProduct: (m: Medicine) => void;
+  onAdd: (m: Medicine) => void;
+  onCart: () => void;
+  search: string;
+  setSearch: (v: string) => void;
+  cartCount: number;
+  location: SavedLocation | null;
+  onLocation: () => void;
+  refills: Refill[];
+  activeProfile: FamilyMember | null;
+  onReorderRefill: (r: Refill) => void;
 }) {
+   const router = useRouter();
   const styles = useStyles();
   const { colors } = useTheme();
+
   return (
-    <ScrollView style={styles.content} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.content}
+      contentContainerStyle={[styles.scroll, { paddingBottom: 30 }]}
+      showsVerticalScrollIndicator={false}
+    >
+
+      {/* Header */}
       <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <CapsulePill size={30} />
-          <Wordmark size={22} />
+        <View>
+          {/*<Text style={styles.muted}>Good afternoon 👋</Text>*/}
+          <Text style={[styles.title, { marginTop: 3 }]}>
+            {activeProfile?.name?.split(" ")[0] || "Shifa"}
+          </Text>
         </View>
-        <Press testID="cart-button" style={styles.iconButton} onPress={onCart}>
-          <Icon name="cart-outline" color={colors.brandPrimary} />
-          <View style={{ position: "absolute", top: 7, right: 8, minWidth: 15, height: 15, borderRadius: 8, backgroundColor: colors.error, alignItems: "center", justifyContent: "center", paddingHorizontal: 3 }}>
-            <Text style={{ color: colors.onError, fontSize: 9, fontWeight: "900" }}>{cartCount}</Text>
-          </View>
-        </Press>
+
+        <View
+          style={[
+            styles.iconButton,
+            {
+              backgroundColor: colors.brandTertiary,
+            },
+          ]}
+        >
+          <Icon
+            name="heart-outline"
+            color={colors.brandPrimary}
+            size={21}
+          />
+        </View>
       </View>
 
-      <Press testID="location-open" style={styles.locationRow} onPress={onLocation}>
-        <Icon name="location" size={20} color={colors.brandPrimary} />
+      {/* Location */}
+      <Press
+        testID="location-open"
+        style={styles.locationRow}
+        onPress={onLocation}
+      >
+        <Icon
+          name="location"
+          size={20}
+          color={colors.brandPrimary}
+        />
+
         <View style={{ flex: 1 }}>
-          <Text style={{ color: colors.onSurface, fontSize: 14, fontWeight: "800" }}>{location?.label ?? "Choose your location"}  <Icon name="chevron-down" size={14} color={colors.onSurface} /></Text>
-          <Text style={styles.muted} numberOfLines={1}>{location?.address ?? "Tap to set delivery address"}</Text>
+          <Text
+            style={{
+              color: colors.onSurface,
+              fontSize: 14,
+              fontWeight: "800",
+            }}
+          >
+            {location?.label ?? "Choose your location"}
+          </Text>
+
+          <Text
+            style={styles.muted}
+            numberOfLines={1}
+          >
+            {location?.address ?? "Tap to set your location"}
+          </Text>
         </View>
-        {activeProfile ? (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: colors.brandTertiary }}>
-            <Icon name="people" size={12} color={colors.brandPrimary} />
-            <Text style={{ color: colors.onBrandTertiary, fontSize: 11, fontWeight: "800" }}>For {activeProfile.name.split(" ")[0]}</Text>
-          </View>
-        ) : null}
+
+        <Icon
+          name="chevron-forward"
+          size={17}
+          color={colors.muted}
+        />
       </Press>
 
-      <View style={styles.search}>
-        <Icon name="search" color={colors.muted} />
-        <TextInput style={styles.searchInput} placeholder="Search medicines, healthcare products…" placeholderTextColor={colors.muted} value={search} onChangeText={setSearch} />
-        <Icon name="mic-outline" color={colors.brandPrimary} />
-      </View>
+      {/* AI Healthcare Assistant */}
+      <LinearGradient
+        colors={[
+          colors.brandTertiary,
+          colors.surfaceTertiary,
+        ]}
+        style={[
+          styles.hero,
+          {
+            marginTop: 4,
+            marginBottom: 18,
+          },
+        ]}
+      >
+        <View style={styles.heroInner}>
 
-      <Press style={styles.hero} onPress={() => onTab("categories")}>
-        <LinearGradient colors={[colors.brandTertiary, colors.surfaceTertiary]} style={styles.heroInner}>
           <View>
-            <Text style={styles.heroTitle}>Medicines at your doorstep</Text>
-            <Text style={styles.heroCopy}>From trusted local pharmacies to your home, in minutes.</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Press style={styles.primaryButton} onPress={() => onTab("categories")}>
-              <Text style={styles.buttonText}>Order now</Text>
-              <Icon name="arrow-forward" size={16} color={colors.onBrandPrimary} />
-            </Press>
-            <Icon name="medical" size={55} color={colors.brandPrimary} />
-          </View>
-        </LinearGradient>
-      </Press>
+            <Text style={styles.heroTitle}>
+              AI Healthcare Assistant
+            </Text>
 
-      <Press style={styles.rxCard} onPress={onPrescription}>
-        <View style={styles.rxIcon}><Icon name="cloud-upload-outline" color={colors.brandPrimary} size={23} /></View>
+            <Text style={styles.heroCopy}>
+              Understand your prescription and
+              navigate to relevant healthcare.
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <Icon
+              name="medical"
+              size={48}
+              color={colors.brandPrimary}
+            />
+
+            <View
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: 23,
+                backgroundColor: colors.surface,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon
+                name="sparkles-outline"
+                size={23}
+                color={colors.brandPrimary}
+              />
+            </View>
+          </View>
+
+        </View>
+      </LinearGradient>
+
+      {/* Prescription Upload */}
+      <Pressable
+        testID="prescription-upload"
+        style={[
+          styles.rxCard,
+          {
+            marginBottom: 22,
+            padding: 16,
+          },
+        ]}
+        onPress={() => router.push("/prescription-test")}
+      >
+        <View style={styles.rxIcon}>
+          <Icon
+            name="document-text-outline"
+            color={colors.brandPrimary}
+            size={24}
+          />
+        </View>
+
         <View style={{ flex: 1 }}>
-          <Text style={styles.productName}>Upload a prescription</Text>
-          <Text style={styles.muted}>We will find the medicines for you</Text>
+          <Text style={styles.productName}>
+            Analyze Prescription
+          </Text>
+
+          <Text style={styles.muted}>
+            Upload a prescription to extract medicines
+          </Text>
         </View>
-        <Text style={styles.link}>Upload</Text>
+
+        <View
+          style={{
+            backgroundColor: colors.brandPrimary,
+            paddingHorizontal: 13,
+            paddingVertical: 8,
+            borderRadius: 11,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.onBrandPrimary,
+              fontSize: 12,
+              fontWeight: "800",
+            }}
+          >
+            Upload
+          </Text>
+        </View>
+      </Pressable>
+      {/* Healthcare Journey */}
+      <View
+        style={[
+          styles.rowBetween,
+          {
+            marginBottom: 14,
+          },
+        ]}
+      >
+        <Text style={styles.sectionTitle}>
+          Your Healthcare Journey
+        </Text>
+
+        <Icon
+          name="arrow-forward-circle-outline"
+          color={colors.brandPrimary}
+          size={21}
+        />
+      </View>
+      {/* Step 1 */}
+      <Pressable
+        onPress={() => router.push("/prescription-test")}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 12,
+        }}
+      >
+        <View
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            backgroundColor: colors.brandPrimary,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon
+            name="checkmark"
+            color={colors.onBrandPrimary}
+            size={18}
+          />
+        </View>
+
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.productName}>
+            1. Prescription
+          </Text>
+
+          <Text style={styles.muted}>
+            Upload your prescription
+          </Text>
+        </View>
+      </Pressable>
+
+      {/* Step 2 */}
+      <Press
+        onPress={() =>
+          Alert.alert(
+            "Symptoms",
+            "Symptom input will be connected in the next step."
+          )
+        }
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 12,
+        }}
+      >
+        <View
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            backgroundColor: colors.brandTertiary,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: colors.brandPrimary,
+              fontWeight: "900",
+            }}
+          >
+            2
+          </Text>
+        </View>
+
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.productName}>
+            Symptoms
+          </Text>
+
+          <Text style={styles.muted}>
+            Tell us what you are experiencing
+          </Text>
+        </View>
+
+        <Icon
+          name="chevron-forward"
+          color={colors.muted}
+          size={17}
+        />
       </Press>
 
-      {refills.length > 0 && (
-        <View style={{ marginBottom: 20 }}>
-          <View style={[styles.rowBetween, { marginBottom: 10 }]}>
-            <Text style={styles.sectionTitle}>Refill reminders</Text>
-            <Press onPress={() => onTab("orders")}><Text style={styles.link}>All refills →</Text></Press>
+      {/* Step 3 */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 12,
+        }}
+      >
+        <View
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: colors.muted,
+              fontWeight: "900",
+            }}
+          >
+            3
+          </Text>
+        </View>
+
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.productName}>
+            AI Analysis
+          </Text>
+
+          <Text style={styles.muted}>
+            Prescription + symptoms analysis
+          </Text>
+        </View>
+      </View>
+
+      {/* Step 4 */}
+      <Press
+        onPress={() => onTab("hospitals")}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 12,
+        }}
+      >
+        <View
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: colors.muted,
+              fontWeight: "900",
+            }}
+          >
+            4
+          </Text>
+        </View>
+
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.productName}>
+            Hospitals
+          </Text>
+
+          <Text style={styles.muted}>
+            Find relevant healthcare facilities
+          </Text>
+        </View>
+
+        <Icon
+          name="chevron-forward"
+          color={colors.muted}
+          size={17}
+        />
+      </Press>
+
+      {/* Step 5 */}
+      <Press
+        onPress={() => onTab("medicines")}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
+        <View
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: colors.muted,
+              fontWeight: "900",
+            }}
+          >
+            5
+          </Text>
+        </View>
+
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.productName}>
+            Medicines
+          </Text>
+
+          <Text style={styles.muted}>
+            Check estimated availability
+          </Text>
+        </View>
+
+        <Icon
+          name="chevron-forward"
+          color={colors.muted}
+          size={17}
+        />
+      </Press>
+
+      {/* Quick Navigation */}
+      <Text
+        style={[
+          styles.sectionTitle,
+          { marginBottom: 14 },
+        ]}
+      >
+        Explore Healthcare
+      </Text>
+
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 12,
+          marginBottom: 22,
+        }}
+      >
+
+        {/* Hospitals */}
+        <Press
+          onPress={() => onTab("hospitals")}
+          style={{
+            flex: 1,
+            borderRadius: 18,
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            padding: 15,
+          }}
+        >
+          <View
+            style={[
+              styles.quickIcon,
+              {
+                marginBottom: 11,
+                backgroundColor: colors.brandTertiary,
+              },
+            ]}
+          >
+            <Icon
+              name="business-outline"
+              color={colors.brandPrimary}
+              size={23}
+            />
           </View>
-          {refills.slice(0, 2).map((refill) => {
-            const days = Math.max(0, Math.ceil((new Date(refill.next_refill_at).getTime() - Date.now()) / 86400000));
-            const soon = days <= 3;
-            return (
-              <View key={refill.id} style={[styles.rxCard, { marginBottom: 10, backgroundColor: soon ? colors.brandTertiary : colors.surfaceSecondary }]}>
-                <View style={[styles.rxIcon, { backgroundColor: soon ? colors.brandPrimary : colors.brandTertiary }]}>
-                  <Icon name="alarm-outline" color={soon ? colors.onBrandPrimary : colors.brandPrimary} size={22} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.productName}>{refill.medicine_name}</Text>
-                  <Text style={styles.muted}>
-                    {refill.for_profile_name ? `For ${refill.for_profile_name} · ` : ""}
-                    {soon ? (days === 0 ? "Due today" : `Due in ${days} day${days === 1 ? "" : "s"}`) : `Refill in ${days} days`}
-                  </Text>
-                </View>
-                <Press testID={`refill-reorder-${refill.id}`} style={styles.primaryButton} onPress={() => onReorderRefill(refill)}>
-                  <Text style={styles.buttonText}>Reorder</Text>
-                </Press>
-              </View>
-            );
-          })}
-        </View>
-      )}
 
-      <View style={styles.quickGrid}>
-        {[["repeat", "Order again", () => onTab("orders")], ["storefront-outline", "Nearby stores", () => onTab("home")], ["pricetag-outline", "Offers", () => onTab("offers")], ["medkit-outline", "Health products", () => onTab("categories")]].map(([icon, label, action]) => (
-          <Press key={label as string} style={styles.quickItem} onPress={action as () => void}>
-            <View style={styles.quickIcon}><Icon name={icon as IconName} color={colors.brandPrimary} size={22} /></View>
-            <Text style={styles.quickLabel}>{label as string}</Text>
-          </Press>
-        ))}
-      </View>
+          <Text style={styles.productName}>
+            Hospitals
+          </Text>
 
-      {offers[0] && (
-        <Press style={styles.promo} onPress={() => onTab("offers")}>
-          <LinearGradient colors={[colors.surfaceTertiary, colors.brandTertiary]} style={styles.promoInner}>
-            <Text style={styles.promoTitle}>{offers[0].title}</Text>
-            <Text style={styles.promoCopy}>{offers[0].subtitle} · Use code {offers[0].code}</Text>
-          </LinearGradient>
+          <Text
+            style={[
+              styles.muted,
+              { marginTop: 3 },
+            ]}
+          >
+            Relevant care nearby
+          </Text>
         </Press>
-      )}
 
-      <View style={[styles.rowBetween, { marginBottom: 13 }]}>
-        <Text style={styles.sectionTitle}>Shop by category</Text>
-        <Press onPress={() => onTab("categories")}><Text style={styles.link}>See all →</Text></Press>
+        {/* Medicines */}
+        <Press
+          onPress={() => onTab("medicines")}
+          style={{
+            flex: 1,
+            borderRadius: 18,
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            padding: 15,
+          }}
+        >
+          <View
+            style={[
+              styles.quickIcon,
+              {
+                marginBottom: 11,
+                backgroundColor: colors.brandTertiary,
+              },
+            ]}
+          >
+            <Icon
+              name="medical-outline"
+              color={colors.brandPrimary}
+              size={23}
+            />
+          </View>
+
+          <Text style={styles.productName}>
+            Medicines
+          </Text>
+
+          <Text
+            style={[
+              styles.muted,
+              { marginTop: 3 },
+            ]}
+          >
+            Estimated availability
+          </Text>
+        </Press>
+
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-        {categories.slice(0, 6).map((category) => (
-          <Press key={category.id} style={styles.categoryPill} onPress={() => onCategory(category.name)}>
-            <View style={styles.categoryIcon}><Icon name={category.icon as IconName} color={colors.brandPrimary} size={23} /></View>
-            <Text style={styles.categoryName} numberOfLines={2}>{category.name}</Text>
+
+      {/* How it works */}
+      {/* Start Analysis */}
+      <Text
+        style={[
+          styles.sectionTitle,
+          { marginBottom: 14 },
+        ]}
+      >
+        Start Your Analysis
+      </Text>
+
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 12,
+          marginBottom: 8,
+        }}
+      >
+        {/* Analyze Prescription */}
+        <Press
+          onPress={onPrescription}
+          style={{
+            flex: 1,
+            borderRadius: 18,
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            padding: 15,
+            minHeight: 145,
+          }}
+        >
+          <View
+            style={[
+              styles.quickIcon,
+              {
+                marginBottom: 12,
+                backgroundColor: colors.brandTertiary,
+              },
+            ]}
+          >
+            <Icon
+              name="document-text-outline"
+              color={colors.brandPrimary}
+              size={23}
+            />
+          </View>
+
+          <Text style={styles.productName}>
+            Analyze Prescription
+          </Text>
+
+          <Text
+            style={[
+              styles.muted,
+              { marginTop: 4 },
+            ]}
+          >
+            Extract medicines from your prescription
+          </Text>
+        </Press>
+
+        {/* Describe Symptoms */}
+        <Press
+          onPress={() =>
+            Alert.alert(
+              "Describe Symptoms",
+              "Symptom input will be connected in the next step."
+            )
+          }
+          style={{
+            flex: 1,
+            borderRadius: 18,
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            padding: 15,
+            minHeight: 145,
+          }}
+        >
+          <View
+            style={[
+              styles.quickIcon,
+              {
+                marginBottom: 12,
+                backgroundColor: colors.brandTertiary,
+              },
+            ]}
+          >
+            <Icon
+              name="medkit-outline"
+              color={colors.brandPrimary}
+              size={23}
+            />
+          </View>
+
+          <Text style={styles.productName}>
+            Describe Symptoms
+          </Text>
+
+          <Text
+            style={[
+              styles.muted,
+              { marginTop: 4 },
+            ]}
+          >
+            Tell us what you are experiencing
+          </Text>
+        </Press>
+      </View>
+
+      {/* Disclaimer */}
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 9,
+          marginTop: 16,
+          paddingHorizontal: 4,
+        }}
+      >
+        <Icon
+          name="information-circle-outline"
+          size={17}
+          color={colors.muted}
+        />
+
+        <Text
+          style={[
+            styles.caption,
+            {
+              flex: 1,
+              lineHeight: 17,
+            },
+          ]}
+        >
+          This app provides healthcare navigation and
+          estimated medicine availability information.
+          It does not provide a medical diagnosis.
+        </Text>
+      </View>
+
+    </ScrollView>
+  );
+}
+function HospitalsScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
+
+  const [search, setSearch] = useState("");
+  const [specialty, setSpecialty] = useState("All");
+  const [facilityType, setFacilityType] = useState("All");
+  const [distance, setDistance] = useState("5 km");
+
+  const hospitals = [
+    {
+      id: "h1",
+      name: "City Care Hospital",
+      type: "Multispeciality",
+      distance: 2.1,
+      specialties: ["General Physician", "Orthopedics", "Cardiology"],
+      x: "25%",
+      y: "32%",
+    },
+    {
+      id: "h2",
+      name: "Sunrise Clinic",
+      type: "Clinic",
+      distance: 3.2,
+      specialties: ["General Physician", "Pediatrics"],
+      x: "68%",
+      y: "25%",
+    },
+    {
+      id: "h3",
+      name: "Metro Nursing Home",
+      type: "Nursing Home",
+      distance: 3.8,
+      specialties: ["Orthopedics", "General Physician"],
+      x: "48%",
+      y: "55%",
+    },
+    {
+      id: "h4",
+      name: "Wellness Medical Centre",
+      type: "Clinic",
+      distance: 4.5,
+      specialties: ["Psychiatry", "General Physician"],
+      x: "78%",
+      y: "63%",
+    },
+    {
+      id: "h5",
+      name: "Advanced Care Hospital",
+      type: "Hospital",
+      distance: 5.0,
+      specialties: ["Oncology", "Cardiology", "Neurology"],
+      x: "20%",
+      y: "70%",
+    },
+  ];
+
+  const filteredHospitals = hospitals.filter((hospital) => {
+    const searchMatch =
+      hospital.name.toLowerCase().includes(search.toLowerCase()) ||
+      hospital.type.toLowerCase().includes(search.toLowerCase()) ||
+      hospital.specialties.some((item) =>
+        item.toLowerCase().includes(search.toLowerCase())
+      );
+
+    const specialtyMatch =
+      specialty === "All" ||
+      hospital.specialties.includes(specialty);
+
+    const typeMatch =
+      facilityType === "All" ||
+      hospital.type === facilityType;
+
+    const distanceMatch =
+      distance === "10 km"
+        ? hospital.distance <= 10
+        : hospital.distance <= Number(distance.replace(" km", ""));
+
+    return searchMatch && specialtyMatch && typeMatch && distanceMatch;
+  });
+
+  const chooseSpecialty = () => {
+    Alert.alert(
+      "Specialty",
+      "Choose a specialty",
+      [
+        "All",
+        "General Physician",
+        "Orthopedics",
+        "Cardiology",
+        "Dermatology",
+        "Psychiatry",
+        "Oncology",
+        "Pediatrics",
+        "Gynecology",
+        "ENT",
+        "Neurology",
+      ].map((item) => ({
+        text: item,
+        onPress: () => setSpecialty(item),
+      }))
+    );
+  };
+
+  const chooseFacilityType = () => {
+    Alert.alert(
+      "Facility Type",
+      "Choose a facility type",
+      [
+        "All",
+        "Hospital",
+        "Multispeciality",
+        "Clinic",
+        "Nursing Home",
+      ].map((item) => ({
+        text: item,
+        onPress: () => setFacilityType(item),
+      }))
+    );
+  };
+
+  const chooseDistance = () => {
+    Alert.alert(
+      "Distance",
+      "Show facilities within",
+      ["2 km", "5 km", "10 km"].map((item) => ({
+        text: item,
+        onPress: () => setDistance(item),
+      }))
+    );
+  };
+
+  const showHospital = (hospital: (typeof hospitals)[number]) => {
+    Alert.alert(
+      hospital.name,
+      `${hospital.type}\n\n${hospital.distance} km away\n\n${hospital.specialties.join(
+        " • "
+      )}`
+    );
+  };
+
+  return (
+    <ScrollView
+      style={styles.content}
+      contentContainerStyle={[
+        styles.scroll,
+        { paddingBottom: 30 },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
+      <View
+        style={[
+          styles.rowBetween,
+          { marginBottom: 14 },
+        ]}
+      >
+        <View>
+          <Text style={styles.title}>
+            Hospitals
+          </Text>
+
+          <Text
+            style={[
+              styles.muted,
+              { marginTop: 3 },
+            ]}
+          >
+            Find nearby healthcare facilities
+          </Text>
+        </View>
+
+        <View
+          style={[
+            styles.quickIcon,
+            {
+              backgroundColor: colors.brandTertiary,
+            },
+          ]}
+        >
+          <Icon
+            name="business-outline"
+            color={colors.brandPrimary}
+            size={23}
+          />
+        </View>
+      </View>
+
+      {/* Search */}
+      <View
+        style={[
+          styles.search,
+          {
+            marginBottom: 12,
+          },
+        ]}
+      >
+        <Icon
+          name="search"
+          color={colors.muted}
+        />
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search hospitals, clinics, specialties"
+          placeholderTextColor={colors.muted}
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
+
+      {/* Filters */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 14 }}
+        contentContainerStyle={{ gap: 8 }}
+      >
+        <Press
+          onPress={() => {
+            setSpecialty("All");
+            setFacilityType("All");
+          }}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 20,
+            backgroundColor:
+              specialty === "All" && facilityType === "All"
+                ? colors.brandPrimary
+                : colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "800",
+              color:
+                specialty === "All" && facilityType === "All"
+                  ? colors.onBrandPrimary
+                  : colors.onSurface,
+            }}
+          >
+            All
+          </Text>
+        </Press>
+
+        <Press
+          onPress={chooseSpecialty}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 20,
+            backgroundColor:
+              specialty !== "All"
+                ? colors.brandPrimary
+                : colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "800",
+              color:
+                specialty !== "All"
+                  ? colors.onBrandPrimary
+                  : colors.onSurface,
+            }}
+          >
+            {specialty === "All"
+              ? "Specialty"
+              : specialty}
+          </Text>
+        </Press>
+
+        <Press
+          onPress={chooseFacilityType}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 20,
+            backgroundColor:
+              facilityType !== "All"
+                ? colors.brandPrimary
+                : colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "800",
+              color:
+                facilityType !== "All"
+                  ? colors.onBrandPrimary
+                  : colors.onSurface,
+            }}
+          >
+            {facilityType === "All"
+              ? "Facility Type"
+              : facilityType}
+          </Text>
+        </Press>
+
+        <Press
+          onPress={chooseDistance}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 20,
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "800",
+              color: colors.onSurface,
+            }}
+          >
+            {distance}
+          </Text>
+        </Press>
+      </ScrollView>
+
+      {/* Map */}
+      <View
+        style={{
+          height: 300,
+          borderRadius: 20,
+          overflow: "hidden",
+          backgroundColor: "#E8F0ED",
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginBottom: 20,
+        }}
+      >
+        {/* Map background */}
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 55,
+            height: 2,
+            backgroundColor: "#D2DDD9",
+            transform: [{ rotate: "12deg" }],
+          }}
+        />
+
+        <View
+          style={{
+            position: "absolute",
+            left: -30,
+            right: -30,
+            top: 145,
+            height: 2,
+            backgroundColor: "#D2DDD9",
+            transform: [{ rotate: "-8deg" }],
+          }}
+        />
+
+        <View
+          style={{
+            position: "absolute",
+            left: 80,
+            top: -40,
+            width: 2,
+            height: 390,
+            backgroundColor: "#D2DDD9",
+            transform: [{ rotate: "18deg" }],
+          }}
+        />
+
+        <View
+          style={{
+            position: "absolute",
+            right: 100,
+            top: -30,
+            width: 2,
+            height: 380,
+            backgroundColor: "#D2DDD9",
+            transform: [{ rotate: "-15deg" }],
+          }}
+        />
+
+        {/* Map label */}
+        <View
+          style={{
+            position: "absolute",
+            top: 12,
+            left: 12,
+            backgroundColor: colors.surface,
+            paddingHorizontal: 11,
+            paddingVertical: 7,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 11,
+              fontWeight: "800",
+              color: colors.onSurface,
+            }}
+          >
+            Nearby healthcare
+          </Text>
+        </View>
+
+        {/* User location */}
+        <View
+          style={{
+            position: "absolute",
+            left: "46%",
+            top: "42%",
+            width: 18,
+            height: 18,
+            borderRadius: 9,
+            backgroundColor: colors.brandPrimary,
+            borderWidth: 4,
+            borderColor: colors.surface,
+            shadowOpacity: 0.15,
+            shadowRadius: 4,
+          }}
+        />
+
+        {/* Hospital markers */}
+        {filteredHospitals.map((hospital) => (
+          <Press
+            key={hospital.id}
+            onPress={() => showHospital(hospital)}
+            style={{
+              position: "absolute",
+              left: hospital.x as any,
+              top: hospital.y as any,
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: colors.surface,
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 2,
+              borderColor: colors.brandPrimary,
+              shadowOpacity: 0.15,
+              shadowRadius: 5,
+              elevation: 3,
+            }}
+          >
+            <Icon
+              name="business"
+              size={18}
+              color={colors.brandPrimary}
+            />
           </Press>
         ))}
-      </ScrollView>
-
-      <View style={[styles.rowBetween, { marginBottom: 13 }]}>
-        <Text style={styles.sectionTitle}>Nearby pharmacies</Text>
-        <Text style={styles.link}>See all →</Text>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pharmacyRow}>
-        {pharmacies.map((pharmacy) => <PharmacyCard key={pharmacy.id} pharmacy={pharmacy} />)}
-      </ScrollView>
 
-      <View style={{ marginTop: 24 }}>
-        <View style={[styles.rowBetween, { marginBottom: 13 }]}>
-          <Text style={styles.sectionTitle}>Popular near you</Text>
-          <Press onPress={() => onTab("categories")}><Text style={styles.link}>Browse</Text></Press>
+      {/* Results */}
+      <View
+        style={[
+          styles.rowBetween,
+          { marginBottom: 12 },
+        ]}
+      >
+        <Text style={styles.sectionTitle}>
+          Nearby Healthcare Facilities
+        </Text>
+
+        <Text style={styles.caption}>
+          {filteredHospitals.length} found
+        </Text>
+      </View>
+
+      {filteredHospitals.map((hospital) => (
+        <Press
+          key={hospital.id}
+          onPress={() => showHospital(hospital)}
+          style={{
+            backgroundColor: colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 17,
+            padding: 14,
+            marginBottom: 11,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+            }}
+          >
+            <View
+              style={[
+                styles.quickIcon,
+                {
+                  width: 43,
+                  height: 43,
+                  marginRight: 11,
+                  backgroundColor: colors.brandTertiary,
+                },
+              ]}
+            >
+              <Icon
+                name="business-outline"
+                color={colors.brandPrimary}
+                size={21}
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.productName}>
+                {hospital.name}
+              </Text>
+
+              <Text
+                style={[
+                  styles.muted,
+                  { marginTop: 2 },
+                ]}
+              >
+                {hospital.type}
+              </Text>
+
+              <Text
+                style={[
+                  styles.caption,
+                  { marginTop: 5 },
+                ]}
+              >
+                📍 {hospital.distance} km •{" "}
+                {hospital.specialties.join(" • ")}
+              </Text>
+            </View>
+
+            <Icon
+              name="chevron-forward"
+              color={colors.muted}
+              size={18}
+            />
+          </View>
+        </Press>
+      ))}
+
+      {filteredHospitals.length === 0 && (
+        <View
+          style={{
+            alignItems: "center",
+            paddingVertical: 30,
+          }}
+        >
+          <Icon
+            name="search-outline"
+            color={colors.muted}
+            size={30}
+          />
+
+          <Text
+            style={[
+              styles.productName,
+              { marginTop: 10 },
+            ]}
+          >
+            No facilities found
+          </Text>
+
+          <Text
+            style={[
+              styles.muted,
+              {
+                marginTop: 4,
+                textAlign: "center",
+              },
+            ]}
+          >
+            Try changing your search or filters.
+          </Text>
         </View>
-        {medicines.slice(0, 3).map((medicine) => <ProductCard key={medicine.id} medicine={medicine} onAdd={onAdd} onDetails={onProduct} />)}
+      )}
+
+      {/* Information */}
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 8,
+          marginTop: 8,
+          paddingHorizontal: 3,
+        }}
+      >
+        <Icon
+          name="information-circle-outline"
+          size={16}
+          color={colors.muted}
+        />
+
+        <Text
+          style={[
+            styles.caption,
+            {
+              flex: 1,
+              lineHeight: 17,
+            },
+          ]}
+        >
+          Hospital locations and specialties shown here
+          are sample data for the current prototype.
+        </Text>
       </View>
     </ScrollView>
   );
 }
+function MedicinesScreen() {
+  const styles = useStyles();
+  const { colors } = useTheme();
 
+  const [search, setSearch] = useState("");
+  const [medicineType, setMedicineType] = useState("All");
+  const [distance, setDistance] = useState("5 km");
+
+  const pharmacies = [
+    {
+      id: "p1",
+      name: "CityCare Pharmacy",
+      distance: 2.1,
+      type: "Pharmacy",
+      medicines: [
+        "Paracetamol",
+        "Cetirizine",
+        "Pantoprazole",
+      ],
+      availability: "High",
+      x: "25%",
+      y: "32%",
+    },
+    {
+      id: "p2",
+      name: "HealthPlus Pharmacy",
+      distance: 3.2,
+      type: "Pharmacy",
+      medicines: [
+        "Amoxicillin",
+        "Paracetamol",
+        "Azithromycin",
+      ],
+      availability: "Medium",
+      x: "68%",
+      y: "25%",
+    },
+    {
+      id: "p3",
+      name: "Wellness Medical Store",
+      distance: 3.8,
+      type: "Medical Store",
+      medicines: [
+        "Cetirizine",
+        "Pantoprazole",
+        "Paracetamol",
+      ],
+      availability: "High",
+      x: "48%",
+      y: "55%",
+    },
+    {
+      id: "p4",
+      name: "Metro Health Pharmacy",
+      distance: 4.5,
+      type: "Pharmacy",
+      medicines: [
+        "Azithromycin",
+        "Amoxicillin",
+        "Cetirizine",
+      ],
+      availability: "Medium",
+      x: "78%",
+      y: "63%",
+    },
+    {
+      id: "p5",
+      name: "CarePoint Medical",
+      distance: 5.0,
+      type: "Medical Store",
+      medicines: [
+        "Paracetamol",
+        "Amoxicillin",
+        "Pantoprazole",
+      ],
+      availability: "Low",
+      x: "20%",
+      y: "70%",
+    },
+  ];
+
+  const filteredPharmacies = pharmacies.filter((pharmacy) => {
+    const searchMatch =
+      pharmacy.name
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      pharmacy.medicines.some((medicine) =>
+        medicine
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      );
+
+    const typeMatch =
+      medicineType === "All" ||
+      (medicineType === "Prescription" &&
+        pharmacy.medicines.some((medicine) =>
+          ["Amoxicillin", "Azithromycin"].includes(
+            medicine
+          )
+        )) ||
+      (medicineType === "Common Medicines" &&
+        pharmacy.medicines.some((medicine) =>
+          ["Paracetamol", "Cetirizine"].includes(
+            medicine
+          )
+        ));
+
+    const distanceMatch =
+      distance === "10 km"
+        ? pharmacy.distance <= 10
+        : pharmacy.distance <=
+          Number(distance.replace(" km", ""));
+
+    return (
+      searchMatch &&
+      typeMatch &&
+      distanceMatch
+    );
+  });
+
+  const chooseMedicineType = () => {
+    Alert.alert(
+      "Medicine Type",
+      "Choose a medicine category",
+      [
+        "All",
+        "Prescription",
+        "Common Medicines",
+      ].map((item) => ({
+        text: item,
+        onPress: () => setMedicineType(item),
+      }))
+    );
+  };
+
+  const chooseDistance = () => {
+    Alert.alert(
+      "Distance",
+      "Show pharmacies within",
+      ["2 km", "5 km", "10 km"].map((item) => ({
+        text: item,
+        onPress: () => setDistance(item),
+      }))
+    );
+  };
+
+  const showPharmacy = (
+    pharmacy: (typeof pharmacies)[number]
+  ) => {
+    Alert.alert(
+      pharmacy.name,
+      `${pharmacy.type}\n\n${pharmacy.distance} km away\n\nEstimated availability: ${pharmacy.availability}\n\nMedicines: ${pharmacy.medicines.join(
+        " • "
+      )}`
+    );
+  };
+
+  return (
+    <ScrollView
+      style={styles.content}
+      contentContainerStyle={[
+        styles.scroll,
+        { paddingBottom: 30 },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
+      <View
+        style={[
+          styles.rowBetween,
+          { marginBottom: 14 },
+        ]}
+      >
+        <View>
+          <Text style={styles.title}>
+            Medicines
+          </Text>
+
+          <Text
+            style={[
+              styles.muted,
+              { marginTop: 3 },
+            ]}
+          >
+            Find nearby pharmacies and medicines
+          </Text>
+        </View>
+
+        <View
+          style={[
+            styles.quickIcon,
+            {
+              backgroundColor:
+                colors.brandTertiary,
+            },
+          ]}
+        >
+          <Icon
+            name="medical-outline"
+            color={colors.brandPrimary}
+            size={23}
+          />
+        </View>
+      </View>
+
+      {/* Search */}
+      <View
+        style={[
+          styles.search,
+          {
+            marginBottom: 12,
+          },
+        ]}
+      >
+        <Icon
+          name="search"
+          color={colors.muted}
+        />
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search medicines or pharmacies"
+          placeholderTextColor={colors.muted}
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
+
+      {/* Filters */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 14 }}
+        contentContainerStyle={{ gap: 8 }}
+      >
+        {/* All */}
+        <Press
+          onPress={() =>
+            setMedicineType("All")
+          }
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 20,
+            backgroundColor:
+              medicineType === "All"
+                ? colors.brandPrimary
+                : colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "800",
+              color:
+                medicineType === "All"
+                  ? colors.onBrandPrimary
+                  : colors.onSurface,
+            }}
+          >
+            All
+          </Text>
+        </Press>
+
+        {/* Medicine Type */}
+        <Press
+          onPress={chooseMedicineType}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 20,
+            backgroundColor:
+              medicineType !== "All"
+                ? colors.brandPrimary
+                : colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "800",
+              color:
+                medicineType !== "All"
+                  ? colors.onBrandPrimary
+                  : colors.onSurface,
+            }}
+          >
+            {medicineType === "All"
+              ? "Medicine Type"
+              : medicineType}
+          </Text>
+        </Press>
+
+        {/* Distance */}
+        <Press
+          onPress={chooseDistance}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 20,
+            backgroundColor:
+              colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "800",
+              color: colors.onSurface,
+            }}
+          >
+            {distance}
+          </Text>
+        </Press>
+      </ScrollView>
+
+      {/* Map */}
+      <View
+        style={{
+          height: 300,
+          borderRadius: 20,
+          overflow: "hidden",
+          backgroundColor: "#E8F0ED",
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginBottom: 20,
+        }}
+      >
+        {/* Roads */}
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 55,
+            height: 2,
+            backgroundColor: "#D2DDD9",
+            transform: [
+              { rotate: "12deg" },
+            ],
+          }}
+        />
+
+        <View
+          style={{
+            position: "absolute",
+            left: -30,
+            right: -30,
+            top: 145,
+            height: 2,
+            backgroundColor: "#D2DDD9",
+            transform: [
+              { rotate: "-8deg" },
+            ],
+          }}
+        />
+
+        <View
+          style={{
+            position: "absolute",
+            left: 80,
+            top: -40,
+            width: 2,
+            height: 390,
+            backgroundColor: "#D2DDD9",
+            transform: [
+              { rotate: "18deg" },
+            ],
+          }}
+        />
+
+        <View
+          style={{
+            position: "absolute",
+            right: 100,
+            top: -30,
+            width: 2,
+            height: 380,
+            backgroundColor: "#D2DDD9",
+            transform: [
+              { rotate: "-15deg" },
+            ],
+          }}
+        />
+
+        {/* Map label */}
+        <View
+          style={{
+            position: "absolute",
+            top: 12,
+            left: 12,
+            backgroundColor: colors.surface,
+            paddingHorizontal: 11,
+            paddingVertical: 7,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 11,
+              fontWeight: "800",
+              color: colors.onSurface,
+            }}
+          >
+            Nearby pharmacies
+          </Text>
+        </View>
+
+        {/* User location */}
+        <View
+          style={{
+            position: "absolute",
+            left: "46%",
+            top: "42%",
+            width: 18,
+            height: 18,
+            borderRadius: 9,
+            backgroundColor:
+              colors.brandPrimary,
+            borderWidth: 4,
+            borderColor: colors.surface,
+            shadowOpacity: 0.15,
+            shadowRadius: 4,
+          }}
+        />
+
+        {/* Pharmacy markers */}
+        {filteredPharmacies.map((pharmacy) => (
+          <Press
+            key={pharmacy.id}
+            onPress={() =>
+              showPharmacy(pharmacy)
+            }
+            style={{
+              position: "absolute",
+              left: pharmacy.x as any,
+              top: pharmacy.y as any,
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor:
+                colors.surface,
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 2,
+              borderColor:
+                colors.brandPrimary,
+              shadowOpacity: 0.15,
+              shadowRadius: 5,
+              elevation: 3,
+            }}
+          >
+            <Icon
+              name="medical"
+              size={18}
+              color={colors.brandPrimary}
+            />
+          </Press>
+        ))}
+      </View>
+
+      {/* Results */}
+      <View
+        style={[
+          styles.rowBetween,
+          { marginBottom: 12 },
+        ]}
+      >
+        <Text style={styles.sectionTitle}>
+          Nearby Pharmacies
+        </Text>
+
+        <Text style={styles.caption}>
+          {filteredPharmacies.length} found
+        </Text>
+      </View>
+
+      {/* Pharmacy Cards */}
+      {filteredPharmacies.map((pharmacy) => (
+        <Press
+          key={pharmacy.id}
+          onPress={() =>
+            showPharmacy(pharmacy)
+          }
+          style={{
+            backgroundColor:
+              colors.surfaceSecondary,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 17,
+            padding: 14,
+            marginBottom: 11,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+            }}
+          >
+            <View
+              style={[
+                styles.quickIcon,
+                {
+                  width: 43,
+                  height: 43,
+                  marginRight: 11,
+                  backgroundColor:
+                    colors.brandTertiary,
+                },
+              ]}
+            >
+              <Icon
+                name="medical-outline"
+                color={colors.brandPrimary}
+                size={21}
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.productName}>
+                {pharmacy.name}
+              </Text>
+
+              <Text
+                style={[
+                  styles.muted,
+                  { marginTop: 2 },
+                ]}
+              >
+                {pharmacy.type}
+              </Text>
+
+              <Text
+                style={[
+                  styles.caption,
+                  { marginTop: 5 },
+                ]}
+              >
+                📍 {pharmacy.distance} km •{" "}
+                {pharmacy.medicines.join(" • ")}
+              </Text>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 7,
+                  gap: 6,
+                }}
+              >
+                <View
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: 4,
+                    backgroundColor:
+                      pharmacy.availability ===
+                      "High"
+                        ? colors.success
+                        : pharmacy.availability ===
+                          "Medium"
+                        ? colors.warning
+                        : colors.error,
+                  }}
+                />
+
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: "800",
+                    color:
+                      pharmacy.availability ===
+                      "High"
+                        ? colors.success
+                        : pharmacy.availability ===
+                          "Medium"
+                        ? colors.warning
+                        : colors.error,
+                  }}
+                >
+                  Estimated availability:{" "}
+                  {pharmacy.availability}
+                </Text>
+              </View>
+            </View>
+
+            <Icon
+              name="chevron-forward"
+              color={colors.muted}
+              size={18}
+            />
+          </View>
+        </Press>
+      ))}
+
+      {/* Empty */}
+      {filteredPharmacies.length === 0 && (
+        <View
+          style={{
+            alignItems: "center",
+            paddingVertical: 30,
+          }}
+        >
+          <Icon
+            name="search-outline"
+            color={colors.muted}
+            size={30}
+          />
+
+          <Text
+            style={[
+              styles.productName,
+              { marginTop: 10 },
+            ]}
+          >
+            No pharmacies found
+          </Text>
+
+          <Text
+            style={[
+              styles.muted,
+              {
+                marginTop: 4,
+                textAlign: "center",
+              },
+            ]}
+          >
+            Try changing your search or filters.
+          </Text>
+        </View>
+      )}
+
+      {/* Information */}
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 8,
+          marginTop: 8,
+          paddingHorizontal: 3,
+        }}
+      >
+        <Icon
+          name="information-circle-outline"
+          size={16}
+          color={colors.muted}
+        />
+
+        <Text
+          style={[
+            styles.caption,
+            {
+              flex: 1,
+              lineHeight: 17,
+            },
+          ]}
+        >
+          Medicine availability shown here is
+          estimated and does not represent real-time
+          pharmacy inventory. Confirm availability
+          before visiting.
+        </Text>
+      </View>
+    </ScrollView>
+  );
+}
 function CategoriesScreen({ categories, medicines, onProduct, onAdd, onCategory }: { categories: Category[]; medicines: Medicine[]; onProduct: (m: Medicine) => void; onAdd: (m: Medicine) => void; onCategory: (c: string) => void }) {
   const styles = useStyles();
   const { colors } = useTheme();
@@ -625,71 +2488,6 @@ function CategoriesScreen({ categories, medicines, onProduct, onAdd, onCategory 
   );
 }
 
-function OrdersScreen({ orders, onTrack, onReorder }: { orders: Order[]; onTrack: (o: Order) => void; onReorder: (o: Order) => void }) {
-  const styles = useStyles();
-  const { colors } = useTheme();
-  const [filter, setFilter] = useState("All");
-  const visible = filter === "All" ? orders : orders.filter((order) => filter === "Ongoing" ? order.status !== "Delivered" : order.status === filter);
-  return (
-    <ScrollView style={styles.content} contentContainerStyle={styles.scroll}>
-      <Text style={styles.title}>My orders</Text>
-      <Text style={[styles.body, { marginTop: 5, marginBottom: 18 }]}>Track deliveries and reorder in a tap.</Text>
-      <View style={styles.tabs}>
-        {["All", "Ongoing", "Delivered", "Cancelled"].map((item) => (
-          <Press key={item} style={[styles.tabPill, filter === item && styles.tabPillActive]} onPress={() => setFilter(item)}>
-            <Text style={[styles.tabPillText, filter === item && styles.tabPillTextActive]}>{item}</Text>
-          </Press>
-        ))}
-      </View>
-      {visible.length === 0 ? (
-        <Empty icon="receipt-outline" title="No orders here yet" copy="Your next local pharmacy order will appear here." />
-      ) : visible.map((order) => (
-        <View key={order.id} style={styles.orderCard}>
-          <View style={styles.rowBetween}>
-            <View>
-              <Text style={styles.productName}>#{order.order_number}</Text>
-              <Text style={styles.muted}>{new Date(order.created_at).toLocaleDateString()} · {order.pharmacy_name}</Text>
-            </View>
-            <Text style={[styles.status, order.status !== "Delivered" && { color: colors.info, backgroundColor: colors.surfaceTertiary }]}>{order.status}</Text>
-          </View>
-          <Text style={[styles.body, { marginTop: 14 }]} numberOfLines={1}>{order.items.map((item) => `${item.name} ×${item.quantity}`).join(", ")}</Text>
-          <View style={[styles.rowBetween, { marginTop: 14 }]}>
-            <Text style={styles.productPrice}>₹{order.total}</Text>
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              <Press style={styles.secondaryButton} onPress={() => onReorder(order)}><Text style={styles.secondaryText}>Buy again</Text></Press>
-              <Press onPress={() => onTrack(order)}><Text style={[styles.link, { paddingVertical: 12 }]}>View details</Text></Press>
-            </View>
-          </View>
-        </View>
-      ))}
-    </ScrollView>
-  );
-}
-
-function OffersScreen({ offers }: { offers: Offer[] }) {
-  const styles = useStyles();
-  const { colors } = useTheme();
-  return (
-    <ScrollView style={styles.content} contentContainerStyle={styles.scroll}>
-      <Text style={styles.title}>Offers & deals</Text>
-      <Text style={[styles.body, { marginTop: 5, marginBottom: 18 }]}>Save more on your everyday health.</Text>
-      {offers.map((offer, index) => (
-        <Press key={offer.id} style={styles.offerCard} onPress={() => Alert.alert(offer.code, offer.detail)}>
-          <LinearGradient
-            colors={index === 0 ? [colors.brandTertiary, colors.surfaceTertiary] : index === 1 ? [colors.surfaceTertiary, colors.surfaceSecondary] : [colors.brandTertiary, colors.surfaceSecondary]}
-            style={styles.offerInner}
-          >
-            <View>
-              <Text style={styles.offerTitle}>{offer.title}</Text>
-              <Text style={styles.body}>{offer.subtitle}</Text>
-            </View>
-            <Text style={styles.code}>Use code: {offer.code}</Text>
-          </LinearGradient>
-        </Press>
-      ))}
-    </ScrollView>
-  );
-}
 
 function AccountScreen({ user, onAddresses, onLogout, onOrders, onFamily, familyCount, activeProfile }: {
   user: User; onAddresses: () => void; onLogout: () => void; onOrders: () => void;
@@ -785,46 +2583,6 @@ function AddressModal({ token, user, onDone }: { token: string; user: User; onDo
   );
 }
 
-function UploadModal({ token, onClose }: { token: string; onClose: () => void }) {
-  const styles = useStyles();
-  const { colors } = useTheme();
-  const [uri, setUri] = useState("");
-  const [name, setName] = useState("");
-  const pick = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.75 });
-    if (!result.canceled) { setUri(result.assets[0].uri); setName(result.assets[0].fileName ?? "prescription.jpg"); }
-  };
-  const upload = async () => {
-    if (!uri) return;
-    try {
-      await api.uploadPrescription(token, uri, name);
-      Alert.alert("Prescription uploaded", "A pharmacist will review it before fulfillment.");
-      onClose();
-    } catch (err) {
-      Alert.alert("Upload failed", err instanceof Error ? err.message : "Please try again.");
-    }
-  };
-  return (
-    <Modal visible animationType="slide" transparent onRequestClose={onClose}>
-      <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(11,37,69,0.24)" }}>
-        <View style={[styles.modal, { minHeight: "52%", borderTopLeftRadius: 26, borderTopRightRadius: 26, paddingTop: 18 }]}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Upload prescription</Text>
-            <Press onPress={onClose} style={styles.iconButton}><Icon name="close" /></Press>
-          </View>
-          <Text style={styles.body}>Upload a clear image. A pharmacist will verify it before any prescription medicine is fulfilled.</Text>
-          <Press style={[styles.rxCard, { marginTop: 20, justifyContent: "center" }]} onPress={pick}>
-            <Icon name="image-outline" color={colors.brandPrimary} size={24} />
-            <Text style={[styles.body, { marginLeft: 10 }]}>{name || "Choose an image from your phone"}</Text>
-          </Press>
-          <Press style={[styles.primaryButton, { marginTop: 24 }]} onPress={upload} disabled={!uri}>
-            <Text style={styles.buttonText}>Send for review</Text>
-          </Press>
-        </View>
-      </View>
-    </Modal>
-  );
-}
 
 function TrackingModal({ order, onClose }: { order: Order; onClose: () => void }) {
   const styles = useStyles();
@@ -1100,6 +2858,7 @@ function CartModal({ open, onClose, cart, setCart, user, token, refreshOrders, a
 
 // ----------------- ROOT -----------------
 export default function Index() {
+  const router = useRouter();
   const styles = useStyles();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -1117,7 +2876,7 @@ export default function Index() {
   const [product, setProduct] = useState<Medicine | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [showUpload, setShowUpload] = useState(false);
+
   const [showAddresses, setShowAddresses] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [trackOrder, setTrackOrder] = useState<Order | null>(null);
@@ -1252,7 +3011,7 @@ export default function Index() {
         {tab === "home" && (
           <Home categories={categories} pharmacies={pharmacies} offers={offers} medicines={visibleMedicines}
             onTab={setTab}
-            onPrescription={() => setShowUpload(true)}
+            onPrescription={() => router.push("/prescription-test")}
             onCategory={(category) => { setCategoryFilter(category); setTab("categories"); }}
             onProduct={setProduct}
             onAdd={addToCart}
@@ -1263,6 +3022,12 @@ export default function Index() {
             refills={refills} activeProfile={activeProfile} onReorderRefill={reorderRefill}
           />
         )}
+          {tab === "hospitals" && (
+            <HospitalsScreen />
+          )}
+         {tab === "medicines" && (
+            <MedicinesScreen />
+          )} 
         {tab === "categories" && (
           <CategoriesScreen categories={categories} medicines={visibleMedicines} onProduct={setProduct} onAdd={addToCart} onCategory={setCategoryFilter} />
         )}
@@ -1284,11 +3049,12 @@ export default function Index() {
       <View style={styles.nav}>
         {(
           [
+                    
             ["home", "Home", "home-outline"],
-            ["categories", "Categories", "grid-outline"],
-            ["orders", "Orders", "receipt-outline"],
-            ["offers", "Offers", "pricetag-outline"],
+            ["hospitals", "Hospitals", "business-outline"],
+            ["medicines", "Medicines", "medical-outline"],
             ["account", "Account", "person-outline"],
+            
           ] as [Tab, string, IconName][]
         ).map(([key, label, icon]) => (
           <Press
@@ -1310,7 +3076,7 @@ export default function Index() {
       <CartModal open={showCart} onClose={() => setShowCart(false)} cart={cart} setCart={setCart} user={user} token={token} refreshOrders={refreshOrders} activeProfile={activeProfile} deliveryAddress={location?.address ?? null} />
       <LocationModal visible={showLocation} onClose={() => setShowLocation(false)} onPick={(loc) => { setLocation(loc); setShowLocation(false); }} current={location} />
       <FamilyModal visible={showFamily} onClose={() => setShowFamily(false)} token={token} activeId={activeProfile?.id ?? null} members={family} onChange={setFamily} onPick={(member) => { setActiveProfile(member); setShowFamily(false); }} />
-      {showUpload && <UploadModal token={token} onClose={() => setShowUpload(false)} />}
+      
       {showAddresses && (
         <Modal visible animationType="slide" onRequestClose={() => setShowAddresses(false)}>
           <AddressModal token={token} user={user} onDone={() => setShowAddresses(false)} />

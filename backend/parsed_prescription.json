@@ -1,0 +1,40 @@
+{
+  "success": true,
+  "patient": {
+    "name": "SHIFA MOHAMMAD"
+  },
+  "date": "2026-06-03",
+  "symptoms": [
+    {
+      "name": "Vomiting",
+      "duration": "1 day"
+    },
+    {
+      "name": "Fever",
+      "present": false
+    }
+  ],
+  "medicines": [
+    {
+      "name": "Dibact DS",
+      "strength": null,
+      "dosage": null,
+      "frequency": null,
+      "duration": "5 days",
+      "confidence": "partial"
+    },
+    {
+      "name": "Emset",
+      "strength": "4 mg",
+      "dosage": null,
+      "frequency": "SOS",
+      "duration": null,
+      "confidence": "partial"
+    }
+  ],
+  "source": {
+    "provider": "Veryfi",
+    "blueprint": "prescription_medication_label",
+    "document_id": 10654803
+  }
+}

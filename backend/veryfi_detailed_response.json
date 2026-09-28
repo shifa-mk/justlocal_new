@@ -1,0 +1,93 @@
+{
+  "external_id": null,
+  "meta": {
+    "external_id": null,
+    "pages": [
+      {
+        "ocr_score": 0.809,
+        "width": 1200,
+        "height": 1600
+      }
+    ],
+    "tags": [],
+    "ocr_score": 0.809,
+    "original_file_name": "prescription.jpeg",
+    "source": "api",
+    "duplicates": [
+      {
+        "id": 10654779,
+        "url": "https://scdn.veryfi.com/other-documents/246eacfda4ce1f77/2702891c-878e-486f-a061-54f4fdc9ab52/19c1ddc2-7ddb-4294-b352-876d9aabac4e.pdf?Expires=1790583687&Signature=A6sPHFDynmmJ2qNv05btvq5HyInbMjUk6PkIG9ZwYjIAyGlq4KNyA63Ql7WI~eELnnBLsK20yFMMt2YjvZsvaxpk8cl3GC2CV-Xre9ai~9Hig2r7wVzc6a999Ffgwq1WtthZGb1cf3EnGOHIkJr4dBGBLmhaVXKP05FOkHVNqZBuwgiakcnKCJa0z7WsUSLeW8iWU1osvsn2wF8Hjvh9QALdYNgcr2kIY8NCQHxYq5i6E0g5mMj4iqd7HJAMJ5JIFqsE16Um3y7gQkih9s5fQRLTH2eL5U-oBDVdi9zRu2ZXQmrxfywf30xFmhrw9ABJRhba6vyURNnOT9efvTEM5g__&Key-Pair-Id=APKAJCILBXEJFZF4DCHQ",
+        "score": 0.9
+      }
+    ],
+    "blueprint_version": {
+      "id": 3267,
+      "number": 2,
+      "name": null
+    },
+    "barcodes": [
+      {
+        "bounding_region": [
+          0.7799,
+          0.0811,
+          0.5664,
+          0.0811,
+          0.5664,
+          0.1143,
+          0.7799,
+          0.1143
+        ],
+        "data": "20260055492",
+        "type": "Code39"
+      }
+    ],
+    "warnings": []
+  },
+  "pdf_url": "https://scdn.veryfi.com/other-documents/246eacfda4ce1f77/6a03e91e-5f48-4bd5-981f-6c657ec0b3e1/250279a0-ef11-4c45-a806-f3610a00c1b1.pdf?Expires=1790583687&Signature=L667VPU2Atl5NtnrvLHJqFBY3c9yHLBLdmTcx3OyT9Dt76t6U1uUOamJjWUVV-RzXMsXJkPIG2BOSR6WYaRXyuEhvOWE42yxHYhvUh5YKqzcgh6bXKO-GYfZTosfwfG~~JuPKR6xOAmqqw031vYrXX9aPKPFzD9U-EmejR9unzKRBuk1iRPY3z5OgTL96GQyNMAot0-TLTOQS2Oq6NtfssEJjWgkscVyUbuWT8ZEoTlxS3~Dl2fMNf1Il6NhHbbusX-oYJHHxgnk-Qd0ba2ACvWfPvA72mSTxKOQck75GLDovk95V9XK1RRTX7tn7XNsSB1cqbZ3btQ8Yl2LalLwSQ__&Key-Pair-Id=APKAJCILBXEJFZF4DCHQ",
+  "id": 10654803,
+  "created_date": "2026-09-28 08:06:24",
+  "updated_date": "2026-09-28 08:06:26",
+  "img_thumbnail_url": "https://scdn.veryfi.com/other-documents/246eacfda4ce1f77/6a03e91e-5f48-4bd5-981f-6c657ec0b3e1/thumbnail.jpg?Expires=1790583687&Signature=Eova0133ESX5oXfc7FSHUm~ipbIKJuQZQ-d3mnVMLX4EXNUgcDQ4Dqrw~-rIaNGogrmDLoLoVG46PyoqQ0HVrd6LBXZ-sEt2ImABu22fzbrkhqOucXvA3ph-~BTVrA1MRqqGwyJ7HWqzi0xHvCMhxEaO5cCQgiGR4j4RzXZr2fuSQPTcqbxjbn4D7Qljp3BYAgDb8Lj8gQSAEdSH1pOIHxxaL6AQ2Uc7uqKb-lNvbp8mFSJJHWOQ0p2UdyvaBZ~d4bK4fAQs8~~mMDV~DIJLwfawBaUWlcOhj2f8C2wtMl~5WVZRkRsitH92gQKzHZis~o4f1VtTImY~dQKPcYDa1Q__&Key-Pair-Id=APKAJCILBXEJFZF4DCHQ",
+  "text": "\tUHID: 20260055492\nMAASAHEB MEENATAI THAKARE HOSPITAL NERUL\nSector-15.Opp. Nerul Railway Station\nNavi Mumbai, Maharashtra\nCONSULTING ROOM NO:17, TOKEN NO:32\nClinic MEDICINE\nDays: MON,TUE,WED.THU.FRISAT\n\nOUT PATIENT RECORD\nName: SHIFA MOHAMMAD\nDepartment: Medicine\t\t\t\t回家回\nDept No.: 2026/051/0014266\nDate of Registration : 03-06-2026 09:37:45 AM\n\t(shifa8.2005 4a abdm)\nUnit\tMedicine\n\tFee: 10.00\nAge 20Y 9M 30D\t\t\t\tSex: Female\nBriling Type GNL (Inside NMMC)\n\tDO\nStobite No\t******782\t\t\t\tEmail:\nAddress NL4. 33/4, sector 11.Nerul MO 9892870782. Mumbai-City. MAHARASHTRA,\tOccupation OTHER\nINDIA\t\t\t\t\tPrepared by Mr. Sanjay Sutar\nPatient Type NON MLC\n\t818\tPulmed\nVomiting\t1 Day\nLoose\tAtools\tI say\nNo do\tfever\n\n\t-Days\n\t450\n\t3. Dibact DS 17 The Ploy 5 Day\n\t11+11\n\t/ORG\n\t4mg\n\t7. Emset\t4mg sos plo",
+  "blueprint_name": "prescription_medication_label",
+  "template_name": "prescription_medication_label",
+  "consumer_name": {
+    "value": "SHIFA MOHAMMAD"
+  },
+  "date": {
+    "value": "2026-06-03"
+  },
+  "expiration_date": {
+    "value": null
+  },
+  "instructions": {
+    "value": null
+  },
+  "medicine_name": {
+    "value": "Dibact DS"
+  },
+  "quantity": {
+    "value": null
+  },
+  "rx_number": {
+    "value": null
+  },
+  "barcodes": [
+    [
+      {
+        "data": "20260055492",
+        "type": "Code39",
+        "bounding_region": [
+          0.7799,
+          0.0811,
+          0.5664,
+          0.0811,
+          0.5664,
+          0.1143,
+          0.7799,
+          0.1143
+        ]
+      }
+    ]
+  ]
+}

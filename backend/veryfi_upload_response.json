@@ -1,0 +1,79 @@
+{
+  "external_id": null,
+  "meta": {
+    "external_id": null,
+    "pages": [
+      {
+        "ocr_score": 0.809,
+        "width": 1200,
+        "height": 1600
+      }
+    ],
+    "tags": [],
+    "ocr_score": 0.809,
+    "original_file_name": "prescription.jpeg",
+    "source": "api",
+    "duplicates": [
+      {
+        "id": 10654779,
+        "url": "https://scdn.veryfi.com/other-documents/246eacfda4ce1f77/2702891c-878e-486f-a061-54f4fdc9ab52/19c1ddc2-7ddb-4294-b352-876d9aabac4e.pdf?Expires=1790583686&Signature=VYhmQcW24M7somSFAKEEcn5Yiirl8tDCVBTedjdW~L2nZl4Ygno8eI-hT17rfvA70sX0IQL0yasW9jBv8ohC7B9U-ey1YNqAf4qi7AwSq-Iww8N4iBkd5rBeDmd6GHG1CI4zcz8fT9feacjtt03e3AnefI-uXLUvAJLM1Z34tx19hOVVlGJYwbh9RMLsqxQrt7thrSOylCX3yD7kWJeeKHW3V1dkLUIYjZpz5hou9TdS5F3WDFprYiLJsTILzC7JmcawhKsAOkd6bhxaNmYcyOUYPPYMndqpp6r890NAOZoTKvMhyy7bSiutJEnvgw3zbi4XuqkBL2MLgC4DfD9VfQ__&Key-Pair-Id=APKAJCILBXEJFZF4DCHQ",
+        "score": 0.9
+      }
+    ],
+    "blueprint_version": {
+      "id": 3267,
+      "number": 2,
+      "name": null
+    },
+    "barcodes": [
+      {
+        "bounding_region": [
+          0.7799,
+          0.0811,
+          0.5664,
+          0.0811,
+          0.5664,
+          0.1143,
+          0.7799,
+          0.1143
+        ],
+        "data": "20260055492",
+        "type": "Code39"
+      }
+    ],
+    "warnings": []
+  },
+  "pdf_url": "https://scdn.veryfi.com/other-documents/246eacfda4ce1f77/6a03e91e-5f48-4bd5-981f-6c657ec0b3e1/250279a0-ef11-4c45-a806-f3610a00c1b1.pdf?Expires=1790583686&Signature=OQZkhDDuNxMmYrprtZxikjBGvKgz3zgpufkpo9w3Xnh-zlQEHrk70g2jWrBmEOzCr6OjDApYQMPmvz8a0WtkUnjLdNCcjio8GQ77eszNxqdIP7GUm1eY2LOeAnK0OQkjQ32pcHbMFssaH7EKNBTngtT2DilbkBLrcR~6R8rFZsIBHlLs26HYV5fScyLdU-HqORBASLZKLPWHGg-KbdaJ5LDr6F3vQ76T6IKrQJAae44hJCwPAQfWdDkblJs-MdSAlBOTxPBkamwwbVZUWgn9osJsXf7U9BgBpqwATZBxfTLGD7GVB5rROIb4l1Wn07tWWSINtqu9yappRwBhbYHxxA__&Key-Pair-Id=APKAJCILBXEJFZF4DCHQ",
+  "id": 10654803,
+  "created_date": "2026-09-28 08:06:24",
+  "updated_date": "2026-09-28 08:06:26",
+  "img_thumbnail_url": "https://scdn.veryfi.com/other-documents/246eacfda4ce1f77/6a03e91e-5f48-4bd5-981f-6c657ec0b3e1/thumbnail.jpg?Expires=1790583686&Signature=HKFjFonBoyTDy~ya9T9azV29j89y9Hz9V0JesgstOKSSAsppYWKUFwXLMgnk3i3Xltm6DAjoTmQG0TWErPyk49xo~0vYm~FlPsom6JcchVf-cjJZhq4GBz~4keyUY-n6bIt9OZDLqqbs3DzrP-FGJduf~JUVOpETSrnWMII~5Ihdqy7XN8DEmjf6Yh8LnpAFkj84tZjlzw36vBaGr-AkhlAIWo~l8V~m4ShdCPtRx~LvSK5pUjq4DEP-NwSpRBanzVt4-~A2YF0ZKRiK~JkuK48VxsCS32oFAcMxAOk6takBHXQSvkjTO740QeCw9apMgjLqbjaB2ztNXBqUUk3-ig__&Key-Pair-Id=APKAJCILBXEJFZF4DCHQ",
+  "text": "\tUHID: 20260055492\nMAASAHEB MEENATAI THAKARE HOSPITAL NERUL\nSector-15.Opp. Nerul Railway Station\nNavi Mumbai, Maharashtra\nCONSULTING ROOM NO:17, TOKEN NO:32\nClinic MEDICINE\nDays: MON,TUE,WED.THU.FRISAT\n\nOUT PATIENT RECORD\nName: SHIFA MOHAMMAD\nDepartment: Medicine\t\t\t\t回家回\nDept No.: 2026/051/0014266\nDate of Registration : 03-06-2026 09:37:45 AM\n\t(shifa8.2005 4a abdm)\nUnit\tMedicine\n\tFee: 10.00\nAge 20Y 9M 30D\t\t\t\tSex: Female\nBriling Type GNL (Inside NMMC)\n\tDO\nStobite No\t******782\t\t\t\tEmail:\nAddress NL4. 33/4, sector 11.Nerul MO 9892870782. Mumbai-City. MAHARASHTRA,\tOccupation OTHER\nINDIA\t\t\t\t\tPrepared by Mr. Sanjay Sutar\nPatient Type NON MLC\n\t818\tPulmed\nVomiting\t1 Day\nLoose\tAtools\tI say\nNo do\tfever\n\n\t-Days\n\t450\n\t3. Dibact DS 17 The Ploy 5 Day\n\t11+11\n\t/ORG\n\t4mg\n\t7. Emset\t4mg sos plo",
+  "blueprint_name": "prescription_medication_label",
+  "template_name": "prescription_medication_label",
+  "consumer_name": "SHIFA MOHAMMAD",
+  "date": "2026-06-03",
+  "expiration_date": null,
+  "instructions": null,
+  "medicine_name": "Dibact DS",
+  "quantity": null,
+  "rx_number": null,
+  "barcodes": [
+    [
+      {
+        "bounding_region": [
+          0.7799,
+          0.0811,
+          0.5664,
+          0.0811,
+          0.5664,
+          0.1143,
+          0.7799,
+          0.1143
+        ],
+        "data": "20260055492",
+        "type": "Code39"
+      }
+    ]
+  ]
+}
