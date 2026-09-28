@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import re
+import requests
 import uuid
 from dotenv import load_dotenv
 import os
@@ -22,6 +23,7 @@ from fastapi import APIRouter, Depends, FastAPI, File, Header, HTTPException, Re
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
+from prescription_parser import extract_symptoms, extract_medicines
 
 
 ROOT_DIR = Path(__file__).parent
@@ -510,6 +512,258 @@ async def upload_prescription(file: UploadFile = File(...), user: dict = Depends
     await db.prescriptions.insert_one(prescription)
     return {"id": prescription["id"], "filename": prescription["filename"], "status": prescription["status"]}
 
+def _field_value(value):
+    """
+    Veryfi sometimes returns fields as:
+    {"value": "..."}
+    and sometimes as a plain string.
+    """
+    if isinstance(value, dict):
+        return value.get("value")
+    return value
+
+
+def normalize_symptom_name(name: str) -> str:
+    name = str(name).strip()
+
+    aliases = {
+        "loose stool": "Loose stools",
+        "loose stools": "Loose stools",
+        "loose motion": "Loose motions",
+        "loose motions": "Loose motions",
+        "diarrhea": "Diarrhea",
+        "diarrhoea": "Diarrhea",
+        "vomiting": "Vomiting",
+        "vomit": "Vomiting",
+        "fever": "Fever",
+    }
+
+    return aliases.get(name.lower(), name)
+
+
+def merge_symptoms(structured_symptoms, extracted_symptoms):
+    """
+    Combine symptoms detected by Veryfi's structured fields
+    with symptoms detected from OCR/raw text.
+
+    Structured symptoms take priority.
+    Duplicate symptoms are removed.
+    Negated symptoms are excluded.
+    """
+
+    merged = {}
+
+    def add_symptom(item):
+        if not item:
+            return
+
+        if isinstance(item, str):
+            name = item.strip()
+            duration = None
+            present = True
+
+        elif isinstance(item, dict):
+            name = (
+                item.get("name")
+                or item.get("symptom")
+                or item.get("value")
+            )
+            duration = item.get("duration")
+            present = item.get("present", True)
+
+        else:
+            return
+
+        if not name:
+            return
+
+        # Don't add explicitly negated symptoms.
+        if present is False:
+            return
+
+        name = normalize_symptom_name(name)
+
+        if not name:
+            return
+
+        key = name.lower()
+
+        if key not in merged:
+            merged[key] = {
+                "name": name,
+                "duration": str(duration).strip() if duration else None,
+            }
+
+        elif not merged[key].get("duration") and duration:
+            merged[key]["duration"] = str(duration).strip()
+
+    # Add structured Veryfi symptoms first.
+    if isinstance(structured_symptoms, list):
+        for symptom in structured_symptoms:
+            add_symptom(symptom)
+
+    # Add symptoms extracted from raw OCR text.
+    if isinstance(extracted_symptoms, list):
+        for symptom in extracted_symptoms:
+            add_symptom(symptom)
+
+    return list(merged.values())
+@api_router.post("/prescriptions/analyze")
+async def analyze_prescription(
+    file: UploadFile = File(...),
+    user: dict = Depends(current_user),
+) -> dict:
+
+    contents = await file.read()
+
+    if not contents:
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a prescription image."
+        )
+
+    if len(contents) > 8 * 1024 * 1024:
+        raise HTTPException(
+            status_code=413,
+            detail="Please choose an image smaller than 8 MB."
+        )
+
+    client_id = os.getenv("VERYFI_CLIENT_ID")
+    username = os.getenv("VERYFI_USERNAME")
+    api_key = os.getenv("VERYFI_API_KEY")
+
+    if not client_id or not username or not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="Veryfi API credentials are not configured."
+        )
+
+    veryfi_url = "https://api.veryfi.com/api/v8/partner/any-documents"
+
+    headers = {
+        "CLIENT-ID": client_id,
+        "AUTHORIZATION": f"apikey {username}:{api_key}",
+    }
+
+    content_type = file.content_type or "image/jpeg"
+
+    try:
+        response = requests.post(
+            veryfi_url,
+            headers=headers,
+            files={
+                "file": (
+                    file.filename or "prescription.jpg",
+                    contents,
+                    content_type,
+                )
+            },
+            data={
+                "blueprint_name": "prescription_medication_label"
+            },
+            timeout=120,
+        )
+
+    except requests.RequestException as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Unable to reach prescription OCR service: {exc}"
+        )
+
+    if response.status_code not in (200, 201):
+        raise HTTPException(
+            status_code=502,
+            detail=f"Veryfi returned HTTP {response.status_code}: {response.text[:500]}"
+        )
+
+    try:
+        veryfi_result = response.json()
+    except ValueError:
+        raise HTTPException(
+            status_code=502,
+            detail="Veryfi returned an invalid response."
+        )
+
+    raw_text = veryfi_result.get("text", "")
+    print("\n========== VERYFI RAW TEXT ==========")
+    print(raw_text)
+    print("=====================================\n")
+    structured_medicine = veryfi_result.get("medicine_name")
+
+    if isinstance(structured_medicine, dict):
+     structured_medicine = structured_medicine.get("value")
+
+
+    # ---------------------------------------------------------
+    # SYMPTOM EXTRACTION
+    # ---------------------------------------------------------
+
+    # 1. Symptoms detected from Veryfi structured response
+    structured_symptoms = veryfi_result.get("symptoms", [])
+
+    if isinstance(structured_symptoms, dict):
+        structured_symptoms = [structured_symptoms]
+
+    # 2. Symptoms detected from raw OCR text
+    ocr_symptoms = extract_symptoms(raw_text)
+
+    # 3. Combine both sources and remove duplicates
+    symptoms = merge_symptoms(
+        structured_symptoms,
+        ocr_symptoms,
+    )
+
+
+    # ---------------------------------------------------------
+    # MEDICINE EXTRACTION
+    # ---------------------------------------------------------
+
+    medicines = extract_medicines(
+        raw_text,
+        structured_medicine,
+    )
+    patient_name = veryfi_result.get("consumer_name")
+
+    if isinstance(patient_name, dict):
+        patient_name = patient_name.get("value")
+
+    prescription_date = veryfi_result.get("date")
+
+    if isinstance(prescription_date, dict):
+        prescription_date = prescription_date.get("value")
+
+    result = {
+        "success": True,
+
+        "prescription": {
+            "patient_name": patient_name,
+            "date": prescription_date,
+            "filename": file.filename or "prescription.jpg",
+        },
+
+        "symptoms": symptoms,
+
+        "medicines": medicines,
+
+        "source": {
+            "provider": "Veryfi",
+            "blueprint": veryfi_result.get("blueprint_name"),
+            "document_id": veryfi_result.get("id"),
+        },
+    }
+
+    # Save structured analysis only.
+    # We are intentionally not storing the raw prescription image here.
+    await db.prescriptions.insert_one({
+        "id": f"rx-ai-{uuid.uuid4().hex[:10]}",
+        "user_id": user["id"],
+        "filename": file.filename or "prescription.jpg",
+        "status": "Analyzed",
+        "analysis": result,
+        "created_at": now_iso(),
+    })
+
+    return result
 
 @api_router.post("/addresses")
 async def add_address(payload: AddressInput, user: dict = Depends(current_user)) -> dict:

@@ -69,4 +69,42 @@ export const api = {
     if (!response.ok) throw new Error(payload.detail ?? "Prescription upload failed");
     return payload as { id: string; filename: string; status: string };
   },
+  analyzePrescription: async (
+    token: string,
+    uri: string,
+    filename: string,
+    contentType: string = "image/jpeg"
+    ) => {
+    const formData = new FormData();
+
+    formData.append(
+      "file",
+      {
+        uri,
+        name: filename || "prescription.jpg",
+        type: contentType,
+      } as any
+    );
+
+    const response = await fetch(
+      `${API_URL}/api/prescriptions/analyze`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.detail || "Prescription analysis failed."
+      );
+    }
+
+    return data;
+  },
 };

@@ -19,58 +19,177 @@ def get_value(data, field):
         return value.get("value")
 
     return value
-
-
 def extract_symptoms(text):
     """
-    Extract simple symptom information from the OCR text.
+    Extract symptoms from OCR text.
 
-    We only extract what the OCR actually shows.
-    We do not diagnose anything.
+    Handles common OCR errors found in prescription handwriting,
+    while avoiding diagnosis or unsupported symptom inference.
     """
 
     symptoms = []
 
+    if not text:
+        return symptoms
+
+    # -----------------------------------------------------
+    # Normalize OCR text
+    # -----------------------------------------------------
+
+    normalized_text = str(text)
+
+    # Normalize whitespace
+    normalized_text = re.sub(
+        r"\s+",
+        " ",
+        normalized_text
+    ).strip()
+
+    # Common OCR corrections observed in this prescription.
+    # "Atools" is an OCR corruption of "stools".
+    normalized_text = re.sub(
+        r"\bAtools\b",
+        "stools",
+        normalized_text,
+        flags=re.IGNORECASE
+    )
+
+    # OCR sometimes reads handwritten "1 day" as "I say".
+    normalized_text = re.sub(
+        r"\bI\s+say\b",
+        "1 day",
+        normalized_text,
+        flags=re.IGNORECASE
+    )
+
+    # -----------------------------------------------------
+    # Helper
+    # -----------------------------------------------------
+
+    def add_symptom(name, duration=None, present=True):
+
+        # Avoid duplicate positive symptoms
+        if present:
+            for existing in symptoms:
+                if (
+                    existing.get("name", "").lower()
+                    == name.lower()
+                    and existing.get("present", True)
+                ):
+                    return
+
+        symptom = {
+            "name": name
+        }
+
+        if duration:
+            symptom["duration"] = duration
+
+        if not present:
+            symptom["present"] = False
+
+        symptoms.append(symptom)
+
+    # -----------------------------------------------------
     # Vomiting
+    # -----------------------------------------------------
+
     vomiting = re.search(
-        r"Vomiting\s+(\d+)\s*Day",
-        text,
+        r"\bvomit(?:ing)?\b"
+        r".{0,30}?"
+        r"(\d+)\s*(?:day|days|d)\b",
+        normalized_text,
         re.IGNORECASE
     )
 
     if vomiting:
-        symptoms.append({
-            "name": "Vomiting",
-            "duration": f"{vomiting.group(1)} day"
-        })
 
+        number = int(vomiting.group(1))
+
+        duration = (
+            "1 day"
+            if number == 1
+            else f"{number} days"
+        )
+
+        add_symptom(
+            "Vomiting",
+            duration
+        )
+
+    # -----------------------------------------------------
     # Loose stools
+    # -----------------------------------------------------
+
     loose_stools = re.search(
-        r"Loose\s+(?:Atools|stools).*?(\d+)\s*(?:Day|day)",
-        text,
+        r"\b"
+        r"(?:"
+        r"loose\s+stools?"
+        r"|loose\s+motions?"
+        r"|diarrhea"
+        r"|diarrhoea"
+        r")"
+        r"\b"
+        r".{0,30}?"
+        r"(\d+)\s*(?:day|days|d)\b",
+        normalized_text,
         re.IGNORECASE
     )
 
     if loose_stools:
-        symptoms.append({
-            "name": "Loose stools",
-            "duration": f"{loose_stools.group(1)} day"
-        })
 
-    # No fever
-    if re.search(
-        r"No\s+(?:do\s+)?fever",
-        text,
+        number = int(loose_stools.group(1))
+
+        duration = (
+            "1 day"
+            if number == 1
+            else f"{number} days"
+        )
+
+        add_symptom(
+            "Loose stools",
+            duration
+        )
+
+    # -----------------------------------------------------
+    # No fever / negative fever
+    # -----------------------------------------------------
+
+    no_fever = re.search(
+        r"\b"
+        r"(?:no|denies|without)"
+        r"\s+"
+        r"(?:"
+        r"h/?o\s*"
+        r"|history\s+of\s*"
+        r"|do\s+"
+        r")?"
+        r"fever"
+        r"\b",
+        normalized_text,
         re.IGNORECASE
-    ):
-        symptoms.append({
-            "name": "Fever",
-            "present": False
-        })
+    )
+
+    if no_fever:
+
+        add_symptom(
+            "Fever",
+            present=False
+        )
+
+    else:
+
+        # Only mark fever present when explicitly mentioned.
+        fever = re.search(
+            r"\bfever\b",
+            normalized_text,
+            re.IGNORECASE
+        )
+
+        if fever:
+            add_symptom("Fever")
 
     return symptoms
-
-
 def extract_medicines(text, structured_medicine):
     """
     Extract medicine information from Veryfi OCR text.
