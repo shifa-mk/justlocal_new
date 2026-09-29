@@ -62,8 +62,10 @@ export function PrescriptionFlow({
   const [analyzing, setAnalyzing] = useState(false);
 
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
-
-
+  const [finalAnalysis, setFinalAnalysis] = useState<any>(null);
+  const [detectedSymptoms, setDetectedSymptoms] = useState<
+    { name: string; duration?: string }[]
+  >([]);
 
   const quickSymptoms = [
 
@@ -100,6 +102,8 @@ export function PrescriptionFlow({
     setAnalyzing(false);
 
     setSelectedSymptoms([]);
+    setDetectedSymptoms([]);
+    setFinalAnalysis(null);
 
   };
 
@@ -287,26 +291,103 @@ export function PrescriptionFlow({
     setSelectedSymptoms([]);
     setStep("symptoms");
   };
-  const continueToAnalysis = () => {
-
+  const continueToAnalysis = async () => {
     if (!symptoms.trim() && selectedSymptoms.length === 0) {
-
       Alert.alert(
-
         "Add symptoms",
-
         "Please enter at least one symptom or select one from the suggestions."
-
       );
-
       return;
-
     }
 
-
-
+    setAnalyzing(true);
     setStep("analysis");
 
+    try {
+      const token = await storage.secureGet("justlocal_token", null);
+
+      if (!token) {
+        throw new Error("Your session has expired. Please sign in again.");
+      }
+
+      // Build symptoms from the prescription-detected symptoms
+      // and any additional symptoms selected by the patient.
+      const detected = Array.isArray(detectedSymptoms)
+        ? detectedSymptoms
+        : [];
+
+      const detectedNames = detected.map((item) =>
+        String(item.name).trim().toLowerCase()
+      );
+
+      const additionalSymptoms = selectedSymptoms
+        .filter(
+          (item) =>
+            !detectedNames.includes(String(item).trim().toLowerCase())
+        )
+        .map((item) => ({
+          name: String(item).trim(),
+          present: true,
+        }));
+
+      const allSymptoms = [
+        ...detected.map((item) => ({
+          name: item.name,
+          duration: item.duration,
+          present: true,
+        })),
+        ...additionalSymptoms,
+      ];
+
+      const medicines = Array.isArray(analysisResult?.medicines)
+        ? analysisResult.medicines
+        : [];
+
+      console.log("Sending AI analysis request:", {
+        medicines,
+        symptoms: allSymptoms,
+      });
+
+      const response = await fetch(
+        `${API_URL}/api/prescriptions/analyze-consistency`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${String(token)}`,
+          },
+          body: JSON.stringify({
+            medicines,
+            symptoms: allSymptoms,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("AI analysis response:", data);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.detail || "AI analysis failed. Please try again."
+        );
+      }
+
+      setFinalAnalysis(data);
+    } catch (error) {
+      console.error("AI analysis error:", error);
+
+      setFinalAnalysis(null);
+
+      Alert.alert(
+        "AI Analysis",
+        error instanceof Error
+          ? error.message
+          : "Unable to complete AI analysis."
+      );
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
 
@@ -697,7 +778,7 @@ export function PrescriptionFlow({
 
         ]}
 
-        onPress={() => setStep("symptoms")}
+        onPress={goToSymptoms}
 
       >
 
@@ -752,7 +833,40 @@ export function PrescriptionFlow({
         symptoms below.
 
       </Text>
+      {detectedSymptoms.length > 0 && (
+        <View style={styles.detectedSymptomsContainer}>
+          <Text style={styles.sectionTitle}>
+            Detected from prescription
+          </Text>
 
+          {detectedSymptoms.map((item, index) => (
+            <View
+              key={`${item.name}-${index}`}
+              style={styles.detectedSymptomCard}
+            >
+              <View style={styles.detectedSymptomIcon}>
+                <Ionicons
+                  name="checkmark"
+                  size={16}
+                  color="#FFFFFF"
+                />
+              </View>
+
+              <View style={styles.detectedSymptomInfo}>
+                <Text style={styles.detectedSymptomName}>
+                  {item.name}
+                </Text>
+
+                {item.duration ? (
+                  <Text style={styles.detectedSymptomDuration}>
+                    Duration: {item.duration}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
 
 
       <TextInput
@@ -983,14 +1097,17 @@ export function PrescriptionFlow({
               Prescription & symptom analysis
             </Text>
 
-            <Text style={styles.consistencyResult}>
-              Review required
+            <Text style={styles.specialtyName}>
+              {analyzing
+                ? "Analyzing..."
+                : finalAnalysis?.analysis?.specialty ||
+                "Not determined yet"}
             </Text>
 
-            <Text style={styles.consistencyText}>
-              Prescription OCR is connected. Symptom consistency analysis
-              will be calculated by the backend once that analysis endpoint
-              is connected.
+            <Text style={styles.specialtyDescription}>
+              {finalAnalysis?.analysis?.specialty
+                ? "Specialty identified from the reported symptoms for healthcare navigation."
+                : "Specialty classification uses the prescription and reported symptoms."}
             </Text>
           </View>
         </View>
@@ -1001,7 +1118,13 @@ export function PrescriptionFlow({
           <View style={styles.specialtyRow}>
             <View style={styles.specialtyIcon}>
               <Ionicons
-                name="medical-outline"
+                name={
+                  analyzing
+                    ? "sync-outline"
+                    : finalAnalysis?.analysis?.status === "Broadly consistent"
+                      ? "checkmark-circle-outline"
+                      : "information-circle-outline"
+                }
                 size={22}
                 color="#3F8F72"
               />
@@ -2062,5 +2185,44 @@ const styles = StyleSheet.create({
     marginTop: 4,
 
   },
+  detectedSymptomsContainer: {
+    marginBottom: 20,
+  },
 
+  detectedSymptomCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#DDE7E2",
+    borderRadius: 15,
+    backgroundColor: "#F7FBF9",
+    padding: 12,
+    marginBottom: 8,
+  },
+
+  detectedSymptomIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#3F8F72",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 11,
+  },
+
+  detectedSymptomInfo: {
+    flex: 1,
+  },
+
+  detectedSymptomName: {
+    color: "#20242A",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+
+  detectedSymptomDuration: {
+    color: "#737B83",
+    fontSize: 11,
+    marginTop: 3,
+  },
 });

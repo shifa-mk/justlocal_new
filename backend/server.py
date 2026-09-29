@@ -24,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
 from prescription_parser import extract_symptoms, extract_medicines
-
+from sentence_transformers import SentenceTransformer
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -53,6 +53,9 @@ class AuthInput(BaseModel):
     identifier: str
     password: str
 
+class PrescriptionAnalysisInput(BaseModel):
+    medicines: List[dict] = []
+    symptoms: List[dict] = []
 
 class RegisterInput(BaseModel):
     name: str
@@ -123,6 +126,20 @@ class RazorpayVerifyInput(BaseModel):
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
+# ---------------------------------------------------------
+# AI / NLP MODEL
+# ---------------------------------------------------------
+
+_ai_model = None
+
+
+def get_ai_model():
+    global _ai_model
+
+    if _ai_model is None:
+        _ai_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    return _ai_model
 
 def safe_user(document: dict) -> dict:
     return {
@@ -608,6 +625,209 @@ def merge_symptoms(structured_symptoms, extracted_symptoms):
             add_symptom(symptom)
 
     return list(merged.values())
+
+# ---------------------------------------------------------
+# AI PRESCRIPTION + SYMPTOM ANALYSIS
+# ---------------------------------------------------------
+
+SPECIALTY_PROFILES = {
+    "General Physician": (
+        "general medical symptoms, vomiting, loose stools, diarrhea, "
+        "fever, weakness, nausea, common acute illnesses"
+    ),
+    "Gastroenterology": (
+        "digestive system, vomiting, diarrhea, loose stools, "
+        "nausea, abdominal and gastrointestinal symptoms"
+    ),
+    "Cardiology": (
+        "heart and cardiovascular symptoms, chest discomfort, "
+        "palpitations, blood pressure and circulation"
+    ),
+    "Dermatology": (
+        "skin, rash, itching, acne, dermatitis and skin conditions"
+    ),
+    "Orthopedics": (
+        "bones, joints, muscles, fractures, back pain and movement"
+    ),
+    "Neurology": (
+        "brain, nerves, headaches, dizziness, seizures and neurological symptoms"
+    ),
+    "ENT": (
+        "ear, nose and throat symptoms, sinus, hearing and throat problems"
+    ),
+    "Pediatrics": (
+        "medical care for children and pediatric symptoms"
+    ),
+    "Gynecology": (
+        "female reproductive health and gynecological symptoms"
+    ),
+    "Psychiatry": (
+        "mental health, mood, anxiety, behavioral and psychiatric symptoms"
+    ),
+    "Oncology": (
+        "cancer-related care and oncology treatment"
+    ),
+}
+
+
+def build_symptom_text(symptoms: list) -> str:
+    parts = []
+
+    for symptom in symptoms:
+        if not isinstance(symptom, dict):
+            continue
+
+        name = symptom.get("name")
+        duration = symptom.get("duration")
+
+        if name:
+            text = str(name).strip()
+
+            if duration:
+                text += f" for {duration}"
+
+            parts.append(text)
+
+    return ", ".join(parts)
+
+
+def build_medicine_text(medicines: list) -> str:
+    parts = []
+
+    for medicine in medicines:
+        if not isinstance(medicine, dict):
+            continue
+
+        name = medicine.get("name")
+
+        if not name:
+            continue
+
+        text = str(name).strip()
+
+        strength = medicine.get("strength")
+        frequency = medicine.get("frequency")
+
+        if strength:
+            text += f" {strength}"
+
+        if frequency:
+            text += f" {frequency}"
+
+        parts.append(text)
+
+    return ", ".join(parts)
+
+
+def calculate_specialty(symptom_text: str) -> tuple[str, float]:
+    model = get_ai_model()
+
+    symptom_embedding = model.encode(
+        symptom_text,
+        normalize_embeddings=True
+    )
+
+    specialty_names = list(SPECIALTY_PROFILES.keys())
+    specialty_texts = list(SPECIALTY_PROFILES.values())
+
+    specialty_embeddings = model.encode(
+        specialty_texts,
+        normalize_embeddings=True
+    )
+
+    scores = specialty_embeddings @ symptom_embedding
+
+    best_index = int(scores.argmax())
+
+    return (
+        specialty_names[best_index],
+        float(scores[best_index])
+    )
+
+
+def analyze_consistency(
+    medicines: list,
+    symptoms: list
+) -> dict:
+
+    if not symptoms:
+        return {
+            "status": "Review required",
+            "explanation": (
+                "No positive symptoms were identified from the "
+                "prescription or patient input."
+            ),
+            "specialty": None,
+            "specialty_score": None,
+        }
+
+    symptom_text = build_symptom_text(symptoms)
+    medicine_text = build_medicine_text(medicines)
+
+    if not symptom_text:
+        return {
+            "status": "Review required",
+            "explanation": "No usable symptom information was provided.",
+            "specialty": None,
+            "specialty_score": None,
+        }
+
+    specialty, specialty_score = calculate_specialty(symptom_text)
+
+    # Semantic relationship between the reported symptoms and
+    # the medicine names is intentionally treated as a navigation
+    # signal, not as a diagnosis.
+    model = get_ai_model()
+
+    symptom_embedding = model.encode(
+        symptom_text,
+        normalize_embeddings=True
+    )
+
+    medicine_embedding = model.encode(
+        medicine_text or "prescription medicine",
+        normalize_embeddings=True
+    )
+
+    similarity = float(
+        symptom_embedding @ medicine_embedding
+    )
+
+    if similarity >= 0.45:
+        status = "Broadly consistent"
+    elif similarity >= 0.25:
+        status = "Partially consistent"
+    else:
+        status = "Review required"
+
+    if status == "Broadly consistent":
+        explanation = (
+            "The reported symptoms show a broad semantic relationship "
+            "with the prescription information. This result is intended "
+            "for healthcare navigation and is not a diagnosis."
+        )
+    elif status == "Partially consistent":
+        explanation = (
+            "Some relationship was identified between the reported "
+            "symptoms and prescription information. Professional review "
+            "may be appropriate."
+        )
+    else:
+        explanation = (
+            "The system could not establish a strong semantic relationship "
+            "between the reported symptoms and prescription information. "
+            "Professional review may be appropriate."
+        )
+
+    return {
+        "status": status,
+        "explanation": explanation,
+        "specialty": specialty,
+        "specialty_score": round(specialty_score, 3),
+        "semantic_score": round(similarity, 3),
+    }
+
+
 @api_router.post("/prescriptions/analyze")
 async def analyze_prescription(
     file: UploadFile = File(...),
@@ -762,6 +982,48 @@ async def analyze_prescription(
         "analysis": result,
         "created_at": now_iso(),
     })
+
+    return result
+
+
+@api_router.post("/prescriptions/analyze-consistency")
+async def analyze_prescription_consistency(
+    payload: PrescriptionAnalysisInput,
+    user: dict = Depends(current_user),
+) -> dict:
+
+    if not payload.symptoms:
+        raise HTTPException(
+            status_code=400,
+            detail="Please provide at least one symptom."
+        )
+
+    analysis = analyze_consistency(
+        payload.medicines,
+        payload.symptoms,
+    )
+
+    result = {
+        "success": True,
+        "analysis": analysis,
+        "medicines": payload.medicines,
+        "symptoms": payload.symptoms,
+    }
+
+    # Store the analysis for the logged-in user.
+    await db.prescriptions.update_one(
+        {
+            "user_id": user["id"],
+            "status": "Analyzed",
+        },
+        {
+            "$set": {
+                "consistency_analysis": analysis,
+                "consistency_analysis_updated_at": now_iso(),
+            }
+        },
+        upsert=False,
+    )
 
     return result
 
